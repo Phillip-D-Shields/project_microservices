@@ -8,6 +8,7 @@
             <hr>
             <a id="brokerBtn" class="btn btn-outline-secondary" href="javascript:void(0)">test broker</a>
             <a id="authBrokerBtn" class="btn btn-outline-secondary" href="javascript:void(0)">test auth</a>
+            <a id="logBtn" class="btn btn-outline-secondary" href="javascript:void(0)">test logger</a>
 
             <div id="output" class="mt-5" style="outline: 1px solid silver; padding: 2em;">
                 <span class="text-muted">Output shows here...</span>
@@ -35,11 +36,42 @@
 <script>
     const brokerBtn = document.getElementById('brokerBtn');
     const authBrokerBtn = document.getElementById('authBrokerBtn');
+    const logBtn = document.getElementById('logBtn');
     const output = document.getElementById('output');
     const sent = document.getElementById('sent');
     const received = document.getElementById('received');
 
-    authBrokerBtn.addEventListener('click', async () => {
+    logBtn.addEventListener("click", async function()  {
+        try {
+            const payload = {
+                action: 'log',
+                log: {
+                    name: "event",
+                    data: "this is a log events data"
+                }
+            }
+
+            const headers = new Headers();
+            headers.append('Content-Type', 'application/json');
+
+            const body = {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            }
+
+            const response = await fetch('http:\/\/localhost:8080/handle', body);
+
+            const data = await response.json();
+            output.innerHTML = `<strong>broker response: </strong>: ${JSON.stringify(data.message, null, 2)}`;
+            sent.innerHTML = JSON.stringify(payload, null, 2);
+            received.innerHTML = JSON.stringify(data, null, 2);
+        } catch (error) {
+            output.innerHTML = `<strong>error: </strong>: ${error.message}`;
+        }
+    })
+
+    authBrokerBtn.addEventListener('click', async function() {
         try {
             const payload = {
                 action: 'auth',
@@ -58,10 +90,9 @@
                 body: JSON.stringify(payload)
             }
 
-
             const response = await fetch('http:\/\/localhost:8080/handle', body);
-
             const data = await response.json();
+
             output.innerHTML = `<strong>broker response: </strong>: ${JSON.stringify(data.message, null, 2)}`;
             sent.innerHTML = JSON.stringify(payload, null, 2);
             received.innerHTML = JSON.stringify(data, null, 2);
@@ -71,22 +102,20 @@
     });
 
 
-    brokerBtn.addEventListener('click', async () => {
-
+    brokerBtn.addEventListener('click', async function() {
         try {
             const response = await fetch('http:\/\/localhost:8080', {
                 method: 'POST',
             });
-
+            
             const data = await response.json();
+            
             output.innerHTML = `<strong>broker response: </strong>: ${JSON.stringify(data.message, null, 2)}`;
             sent.innerHTML = "empty post request";
             received.innerHTML = JSON.stringify(data, null, 2);
         } catch (error) {
             output.innerHTML = `<strong>error: </strong>: ${error.message}`;
         }
-
-
     });
 </script>
 {{end}}
